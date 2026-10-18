@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💜 Mini Notes</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 25px 15px;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    color: white;
+    background: linear-gradient(135deg, #18002e, #4b0082, #8000ff);
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+}
+
+h1 {
+    text-align: center;
+    color: #f0d5ff;
+    font-size: 36px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #e2c2ff;
+    margin-bottom: 28px;
+}
+
+.form {
+    background: #31004f;
+    border: 1px solid #b366ff;
+    padding: 22px;
+    border-radius: 18px;
+    box-shadow: 0 0 20px #8000ff55;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 12px;
+    margin: 7px 0;
+    border: 1px solid #c084fc;
+    border-radius: 9px;
+    background: #f5eaff;
+    color: #31004f;
+    font-size: 15px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 75px;
+}
+
+button {
+    padding: 11px 15px;
+    border: none;
+    border-radius: 9px;
+    color: white;
+    background: #9200ff;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover { background: #bd66ff; }
+
+.form button { width: 100%; margin-top: 8px; }
+
+.notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+    margin-top: 25px;
+}
+
+.mini-note {
+    min-height: 160px;
+    padding: 16px;
+    border: 1px solid #d8b4fe;
+    border-radius: 15px;
+    color: #fff;
+    box-shadow: 0 5px 15px #16002566;
+    overflow-wrap: anywhere;
+    display: flex;
+    flex-direction: column;
+}
+
+.mini-note h3 {
+    margin: 0 0 10px;
+    font-size: 18px;
+}
+
+.mini-note p {
+    flex: 1;
+    white-space: pre-wrap;
+    line-height: 1.5;
+    margin: 0 0 15px;
+}
+
+.mini-note button {
+    align-self: flex-start;
+    background: #39005c;
+    font-size: 12px;
+}
+
+.purple1 { background: #6a0dad; }
+.purple2 { background: #800080; }
+.purple3 { background: #581c87; }
+.purple4 { background: #9333ea; }
+
+.empty {
+    text-align: center;
+    color: #e9d5ff;
+    padding: 25px 0;
+}
+
+h2 { color: #f0d5ff; }
+
+.footer {
+    text-align: center;
+    margin-top: 30px;
+    color: #e2c2ff;
+    font-size: 13px;
+}
+
+@media (max-width: 420px) {
+    h1 { font-size: 29px; }
+    .notes-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mini-note { padding: 12px; }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>💜 Mini Notes 🌷</h1>
+    <p class="subtitle">✨ Little notes, lovely memories ✨</p>
+
+    <div class="form">
+        <input id="title" placeholder="📝 Note title...">
+
+        <textarea id="content" maxlength="500"
+            placeholder="💭 Write your mini note..."></textarea>
+
+        <select id="emoji">
+            <option value="💜">💜 Purple Heart</option>
+            <option value="🌸">🌸 Flower</option>
+            <option value="⭐">⭐ Star</option>
+            <option value="📚">📚 Study</option>
+            <option value="💡">💡 Idea</option>
+            <option value="🎯">🎯 Goal</option>
+            <option value="😊">😊 Happy</option>
+            <option value="☁️">☁️ Reminder</option>
+        </select>
+
+        <button onclick="addNote()">➕ Create Mini Note</button>
+    </div>
+
+    <h2>🌈 My Little Notes</h2>
+    <div id="notes" class="notes-grid"></div>
+
+    <div class="footer">💜 Made with love & little ideas ✨</div>
+</div>
+
+<script>
+let notes = [];
+
+try {
+    const saved = JSON.parse(localStorage.getItem("miniNotes") || "[]");
+    if (Array.isArray(saved)) {
+        notes = saved.filter(n =>
+            n && typeof n.title === "string" &&
+            typeof n.content === "string" &&
+            typeof n.emoji === "string"
+        );
+    }
+} catch (e) {
+    notes = [];
+}
+
+function saveNotes() {
+    try {
+        localStorage.setItem("miniNotes", JSON.stringify(notes));
+        displayNotes();
+        return true;
+    } catch (e) {
+        alert("⚠️ Notes couldn't be saved. Check your browser storage.");
+        return false;
+    }
+}
+
+function addNote() {
+    const titleInput = document.getElementById("title");
+    const contentInput = document.getElementById("content");
+    const title = titleInput.value.trim();
+    const content = contentInput.value.trim();
+    const emoji = document.getElementById("emoji").value;
+
+    if (!title || !content) {
+        alert("💜 Please enter both a title and a note!");
+        return;
+    }
+
+    const note = { title, content, emoji };
+    notes.unshift(note);
+
+    if (saveNotes()) {
+        titleInput.value = "";
+        contentInput.value = "";
+    } else {
+        notes.shift();
+    }
+}
+
+function deleteNote(index) {
+    const removed = notes.splice(index, 1)[0];
+
+    if (!saveNotes()) {
+        notes.splice(index, 0, removed);
+    }
+}
+
+function displayNotes() {
+    const area = document.getElementById("notes");
+    area.replaceChildren();
+
+    if (notes.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty";
+        empty.textContent = "🌙 No mini notes yet. Create your first one! 💫";
+        area.appendChild(empty);
+        return;
+    }
+
+    notes.forEach((note, index) => {
+        const card = document.createElement("div");
+        card.className = "mini-note purple" + ((index % 4) + 1);
+
+        const heading = document.createElement("h3");
+        heading.textContent = note.emoji + " " + note.title;
+
+        const paragraph = document.createElement("p");
+        paragraph.textContent = note.content;
+
+        const button = document.createElement("button");
+        button.textContent = "🗑️ Delete";
+        button.addEventListener("click", () => deleteNote(index));
+
+        card.append(heading, paragraph, button);
+        area.appendChild(card);
+    });
+}
+
+displayNotes();
+</script>
+</body>
+</html>
